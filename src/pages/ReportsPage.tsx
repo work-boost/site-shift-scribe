@@ -1,4 +1,6 @@
 
+import PayrollReport from '@/components/reports/PayrollReport';
+
 const ReportsPage = () => {
   return (
     <div className="space-y-6">
@@ -9,9 +11,7 @@ const ReportsPage = () => {
         </p>
       </div>
       
-      <div className="bg-white p-8 rounded-lg shadow">
-        <p className="text-center text-gray-500">Reports feature coming soon...</p>
-      </div>
+      <PayrollReport />
     </div>
   );
 };
