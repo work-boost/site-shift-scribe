@@ -66,7 +66,7 @@ const DashboardCards = () => {
         .gte('date', weekStartStr);
 
       const weeklyHours = weeklyAttendance?.reduce((total, record) => 
-        total + (parseFloat(record.shift_hours) || 0), 0) || 0;
+        total + (parseFloat(String(record.shift_hours)) || 0), 0) || 0;
 
       setStats({
         totalEmployees,
