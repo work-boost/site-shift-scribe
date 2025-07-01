@@ -28,11 +28,13 @@ interface JobSiteListProps {
   refreshTrigger: number;
 }
 
+type JobSiteStatus = 'Planning' | 'Active' | 'On Hold' | 'Completed' | 'Cancelled';
+
 const JobSiteList = ({ onEdit, onAdd, refreshTrigger }: JobSiteListProps) => {
   const [jobSites, setJobSites] = useState<JobSite[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | JobSiteStatus>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
@@ -162,7 +164,7 @@ const JobSiteList = ({ onEdit, onAdd, refreshTrigger }: JobSiteListProps) => {
               className="pl-8"
             />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'all' | JobSiteStatus)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>

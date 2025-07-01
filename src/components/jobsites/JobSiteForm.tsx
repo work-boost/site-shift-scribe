@@ -85,11 +85,12 @@ const JobSiteForm = ({ jobSite, onSuccess, onCancel }: JobSiteFormProps) => {
     setLoading(true);
     try {
       const jobSiteData = {
-        ...data,
+        name: data.name,
         address: data.address || null,
         assigned_pm: data.assigned_pm || null,
         start_date: data.start_date ? format(data.start_date, 'yyyy-MM-dd') : null,
         end_date: data.end_date ? format(data.end_date, 'yyyy-MM-dd') : null,
+        status: data.status,
       };
 
       if (jobSite) {

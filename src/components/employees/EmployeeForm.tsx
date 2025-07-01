@@ -94,11 +94,15 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }: EmployeeFormProps) => {
       }
 
       const employeeData = {
-        ...data,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        type: data.type,
         email: data.email || null,
         mobile_number: data.mobile_number || null,
         sst_number: data.sst_number || null,
         sst_expire_date: data.sst_expire_date ? format(data.sst_expire_date, 'yyyy-MM-dd') : null,
+        regular_rate: data.regular_rate,
+        overtime_rate: data.overtime_rate,
         sst_image_url,
       };
 
