@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Download, Calendar, BarChart3 } from 'lucide-react';
-import { format, startOfWeek, endOfWeek, addWeeks } from 'date-fns';
+import { Upload, Calendar, BarChart3 } from 'lucide-react';
+import { format, startOfWeek, endOfWeek, addWeeks, subDays, startOfMonth, endOfMonth, subMonths, startOfDay, endOfDay } from 'date-fns';
 import * as XLSX from 'xlsx';
 
 interface WeeklyData {
@@ -29,18 +30,53 @@ const WeeklyReport = () => {
     const today = new Date();
     return format(startOfWeek(today), 'yyyy-MM-dd');
   });
+  const [dateFilter, setDateFilter] = useState('custom');
+
+  const dateFilterOptions = [
+    { value: 'today', label: 'Today' },
+    { value: 'yesterday', label: 'Yesterday' },
+    { value: 'last7days', label: 'Last 7 Days' },
+    { value: 'last30days', label: 'Last 30 Days' },
+    { value: 'thisMonth', label: 'This Month' },
+    { value: 'lastMonth', label: 'Last Month' },
+    { value: 'custom', label: 'Custom Week' },
+  ];
+
+  const getDateRange = (filter: string) => {
+    const today = new Date();
+    
+    switch (filter) {
+      case 'today':
+        return { start: startOfDay(today), end: endOfDay(today) };
+      case 'yesterday':
+        const yesterday = subDays(today, 1);
+        return { start: startOfDay(yesterday), end: endOfDay(yesterday) };
+      case 'last7days':
+        return { start: subDays(today, 6), end: today };
+      case 'last30days':
+        return { start: subDays(today, 29), end: today };
+      case 'thisMonth':
+        return { start: startOfMonth(today), end: endOfMonth(today) };
+      case 'lastMonth':
+        const lastMonth = subMonths(today, 1);
+        return { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) };
+      case 'custom':
+      default:
+        const weekStart = new Date(selectedWeek);
+        return { start: weekStart, end: endOfWeek(weekStart) };
+    }
+  };
 
   useEffect(() => {
-    if (selectedWeek) {
+    if (selectedWeek || dateFilter !== 'custom') {
       fetchWeeklyData();
     }
-  }, [selectedWeek]);
+  }, [selectedWeek, dateFilter]);
 
   const fetchWeeklyData = async () => {
     setLoading(true);
     try {
-      const weekStart = new Date(selectedWeek);
-      const weekEnd = endOfWeek(weekStart);
+      const { start, end } = getDateRange(dateFilter);
 
       const { data: attendance, error: attendanceError } = await supabase
         .from('attendance')
@@ -48,13 +84,13 @@ const WeeklyReport = () => {
           *,
           employees!inner(id, first_name, last_name, regular_rate, overtime_rate)
         `)
-        .gte('date', format(weekStart, 'yyyy-MM-dd'))
-        .lte('date', format(weekEnd, 'yyyy-MM-dd'))
+        .gte('date', format(start, 'yyyy-MM-dd'))
+        .lte('date', format(end, 'yyyy-MM-dd'))
         .order('date', { ascending: false });
 
       if (attendanceError) throw attendanceError;
 
-      // Group by employee and calculate weekly totals
+      // Group by employee and calculate totals
       const weeklyTotals = (attendance || []).reduce((acc: any, record: any) => {
         const employeeId = record.employee_id;
         const employee = record.employees;
@@ -67,8 +103,8 @@ const WeeklyReport = () => {
             total_hours: 0,
             total_days: 0,
             total_pay: 0,
-            week_start: format(weekStart, 'yyyy-MM-dd'),
-            week_end: format(weekEnd, 'yyyy-MM-dd'),
+            week_start: format(start, 'yyyy-MM-dd'),
+            week_end: format(end, 'yyyy-MM-dd'),
             days: new Set(),
           };
         }
@@ -106,10 +142,11 @@ const WeeklyReport = () => {
   };
 
   const exportToExcel = () => {
+    const { start, end } = getDateRange(dateFilter);
     const worksheet = XLSX.utils.json_to_sheet(
       weeklyData.map(record => ({
         'Employee': `${record.first_name} ${record.last_name}`,
-        'Week': `${format(new Date(record.week_start), 'MMM dd')} - ${format(new Date(record.week_end), 'MMM dd, yyyy')}`,
+        'Period': `${format(start, 'MMM dd')} - ${format(end, 'MMM dd, yyyy')}`,
         'Total Hours': record.total_hours?.toFixed(2) || '0.00',
         'Days Worked': record.total_days,
         'Total Pay': `$${record.total_pay?.toFixed(2) || '0.00'}`,
@@ -119,7 +156,7 @@ const WeeklyReport = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Weekly Report');
     
-    const fileName = `weekly_report_${selectedWeek}.xlsx`;
+    const fileName = `weekly_report_${format(start, 'yyyy-MM-dd')}_to_${format(end, 'yyyy-MM-dd')}.xlsx`;
     XLSX.writeFile(workbook, fileName);
     
     toast.success('Excel file downloaded successfully');
@@ -131,6 +168,16 @@ const WeeklyReport = () => {
       totalPay: acc.totalPay + record.total_pay,
     }), { totalHours: 0, totalPay: 0 });
   }, [weeklyData]);
+
+  const handleDateFilterChange = (value: string) => {
+    setDateFilter(value);
+    if (value === 'custom') {
+      const today = new Date();
+      setSelectedWeek(format(startOfWeek(today), 'yyyy-MM-dd'));
+    }
+  };
+
+  const { start, end } = getDateRange(dateFilter);
 
   return (
     <Card className="border-2 border-orange-300 shadow-xl">
@@ -144,23 +191,38 @@ const WeeklyReport = () => {
         </p>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div>
-            <Label htmlFor="week-select" className="text-orange-800 font-semibold">Select Week</Label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-3 h-5 w-5 text-orange-500" />
-              <Input
-                id="week-select"
-                type="date"
-                value={selectedWeek}
-                onChange={(e) => setSelectedWeek(e.target.value)}
-                className="pl-12 border-2 border-orange-300 focus:border-orange-500 rounded-lg"
-              />
-            </div>
-            <p className="text-sm text-orange-600 mt-1">
-              Week: {format(new Date(selectedWeek), 'MMM dd')} - {format(endOfWeek(new Date(selectedWeek)), 'MMM dd, yyyy')}
-            </p>
+            <Label htmlFor="date-filter" className="text-orange-800 font-semibold">Date Filter</Label>
+            <Select value={dateFilter} onValueChange={handleDateFilterChange}>
+              <SelectTrigger className="border-2 border-orange-300 focus:border-orange-500 rounded-lg">
+                <SelectValue placeholder="Select date range" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-2 border-orange-300 rounded-lg shadow-lg z-50">
+                {dateFilterOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="hover:bg-orange-50">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          {dateFilter === 'custom' && (
+            <div>
+              <Label htmlFor="week-select" className="text-orange-800 font-semibold">Select Week</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 h-5 w-5 text-orange-500" />
+                <Input
+                  id="week-select"
+                  type="date"
+                  value={selectedWeek}
+                  onChange={(e) => setSelectedWeek(e.target.value)}
+                  className="pl-12 border-2 border-orange-300 focus:border-orange-500 rounded-lg"
+                />
+              </div>
+            </div>
+          )}
           
           <div className="flex items-end">
             <Button 
@@ -168,10 +230,16 @@ const WeeklyReport = () => {
               variant="outline" 
               className="border-2 border-orange-500 text-orange-700 hover:bg-orange-50 rounded-lg font-semibold"
             >
-              <Download className="h-5 w-5 mr-2" />
+              <Upload className="h-5 w-5 mr-2" />
               Export Excel
             </Button>
           </div>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-sm text-orange-600 font-medium">
+            Period: {format(start, 'MMM dd, yyyy')} - {format(end, 'MMM dd, yyyy')}
+          </p>
         </div>
 
         {weeklyData.length > 0 && (
@@ -233,7 +301,7 @@ const WeeklyReport = () => {
         {weeklyData.length === 0 && !loading && (
           <div className="text-center py-12 text-orange-600">
             <BarChart3 className="h-16 w-16 mx-auto mb-4 text-orange-400" />
-            <p className="text-lg font-medium">No data found for the selected week.</p>
+            <p className="text-lg font-medium">No data found for the selected period.</p>
           </div>
         )}
 
