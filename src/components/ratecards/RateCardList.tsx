@@ -10,27 +10,23 @@ import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
-interface RateCard {
+interface Employee {
   id: string;
-  employee_id: string;
-  valid_from: string;
-  valid_to: string | null;
-  regular_pay_rate: number;
-  overtime_pay_rate: number;
-  employee: {
-    first_name: string;
-    last_name: string;
-  };
+  first_name: string;
+  last_name: string;
+  regular_rate: number;
+  overtime_rate: number;
+  type: string;
 }
 
 interface RateCardListProps {
-  onEdit: (rateCard: RateCard) => void;
+  onEdit: (rateCard: any) => void;
   onAdd: () => void;
   refreshTrigger: number;
 }
 
 const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
-  const [rateCards, setRateCards] = useState<RateCard[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,22 +34,19 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    fetchRateCards();
+    fetchEmployees();
   }, [refreshTrigger, searchTerm, currentPage]);
 
-  const fetchRateCards = async () => {
+  const fetchEmployees = async () => {
     setLoading(true);
     try {
       let query = supabase
-        .from('rate_cards')
-        .select(`
-          *,
-          employee:employees(first_name, last_name)
-        `)
-        .order('valid_from', { ascending: false });
+        .from('employees')
+        .select('*')
+        .order('last_name', { ascending: true });
 
       if (searchTerm) {
-        query = query.or(`employee.first_name.ilike.%${searchTerm}%,employee.last_name.ilike.%${searchTerm}%`);
+        query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
       }
 
       const { data, error, count } = await query
@@ -61,11 +54,11 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
 
       if (error) throw error;
 
-      setRateCards(data || []);
+      setEmployees(data || []);
       setTotalPages(Math.ceil((count || 0) / itemsPerPage));
     } catch (error: any) {
       toast({
-        title: 'Error fetching rate cards',
+        title: 'Error fetching employees',
         description: error.message,
         variant: 'destructive',
       });
@@ -74,41 +67,25 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this rate card?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('rate_cards')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast({ title: 'Rate card deleted successfully' });
-      fetchRateCards();
-    } catch (error: any) {
-      toast({
-        title: 'Error deleting rate card',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
+  const handleEdit = (employee: Employee) => {
+    onEdit(employee);
   };
 
-  const isActive = (rateCard: RateCard) => {
-    const today = new Date();
-    const validFrom = new Date(rateCard.valid_from);
-    const validTo = rateCard.valid_to ? new Date(rateCard.valid_to) : null;
-    
-    return today >= validFrom && (!validTo || today <= validTo);
+  const calculateTotalPay = (regularRate: number, overtimeRate: number, hoursWorked: number = 8) => {
+    if (hoursWorked <= 4) {
+      return hoursWorked * regularRate;
+    } else {
+      const regularHours = 4;
+      const overtimeHours = hoursWorked - 4;
+      return (regularHours * regularRate) + (overtimeHours * overtimeRate);
+    }
   };
 
   if (loading) {
     return (
       <Card>
         <CardContent className="p-8">
-          <div className="text-center">Loading rate cards...</div>
+          <div className="text-center">Loading employee rates...</div>
         </CardContent>
       </Card>
     );
@@ -118,10 +95,10 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Rate Cards</CardTitle>
+          <CardTitle>Employee Rate Cards</CardTitle>
           <Button onClick={onAdd}>
             <Plus className="h-4 w-4 mr-2" />
-            Create Rate Card
+            Add Employee Rate
           </Button>
         </div>
       </CardHeader>
@@ -147,47 +124,42 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
                 <TableHead>Valid To</TableHead>
                 <TableHead>Regular Rate</TableHead>
                 <TableHead>Overtime Rate</TableHead>
+                <TableHead>Total Pay (8hrs)</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rateCards.map((rateCard) => (
-                <TableRow key={rateCard.id}>
+              {employees.map((employee) => (
+                <TableRow key={employee.id}>
                   <TableCell>
-                    {rateCard.employee.first_name} {rateCard.employee.last_name}
+                    <div>
+                      <p className="font-medium">{employee.first_name} {employee.last_name}</p>
+                      <p className="text-sm text-gray-500">{employee.type}</p>
+                    </div>
                   </TableCell>
                   <TableCell>
-                    {format(new Date(rateCard.valid_from), 'MMM dd, yyyy')}
+                    {format(new Date(), 'MMM dd, yyyy')}
                   </TableCell>
                   <TableCell>
-                    {rateCard.valid_to 
-                      ? format(new Date(rateCard.valid_to), 'MMM dd, yyyy')
-                      : 'Ongoing'
-                    }
+                    Ongoing
                   </TableCell>
-                  <TableCell>${rateCard.regular_pay_rate.toFixed(2)}</TableCell>
-                  <TableCell>${rateCard.overtime_pay_rate.toFixed(2)}</TableCell>
+                  <TableCell>${(employee.regular_rate || 0).toFixed(2)}/hr</TableCell>
+                  <TableCell>${(employee.overtime_rate || 0).toFixed(2)}/hr</TableCell>
+                  <TableCell className="font-semibold">
+                    ${calculateTotalPay(employee.regular_rate || 0, employee.overtime_rate || 0, 8).toFixed(2)}
+                  </TableCell>
                   <TableCell>
-                    <Badge variant={isActive(rateCard) ? "default" : "secondary"}>
-                      {isActive(rateCard) ? 'Active' : 'Inactive'}
-                    </Badge>
+                    <Badge variant="default">Active</Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onEdit(rateCard)}
+                        onClick={() => handleEdit(employee)}
                       >
                         <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(rateCard.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -197,9 +169,9 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
           </Table>
         </div>
 
-        {rateCards.length === 0 && (
+        {employees.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            No rate cards found.
+            No employees found.
           </div>
         )}
 

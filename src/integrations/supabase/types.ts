@@ -251,22 +251,7 @@ export type Database = {
           start_time: string | null
           total_pay: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "attendance_employee_id_fkey"
-            columns: ["employee_id"]
-            isOneToOne: false
-            referencedRelation: "employees"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "attendance_jobsite_id_fkey"
-            columns: ["jobsite_id"]
-            isOneToOne: false
-            referencedRelation: "job_sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
