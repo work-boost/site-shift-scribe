@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Search, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Calendar, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 interface AttendanceRecord {
   id: string;
@@ -109,6 +109,54 @@ const AttendanceList = ({ onEdit, onAdd, refreshTrigger }: AttendanceListProps) 
     }
   };
 
+  const exportToExcel = () => {
+    const exportData = attendance.map(record => ({
+      'Employee': `${record.employee.first_name} ${record.employee.last_name}`,
+      'Job Site': record.job_site.name,
+      'Date': format(new Date(record.date), 'MMM dd, yyyy'),
+      'Start Time': record.start_time,
+      'End Time': record.end_time,
+      'Hours': record.shift_hours,
+      'Deduct (min)': record.minute_deduct
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
+    
+    const fileName = `attendance_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    toast({ title: 'Excel file downloaded successfully' });
+  };
+
+  const exportToCSV = () => {
+    const exportData = attendance.map(record => ({
+      'Employee': `${record.employee.first_name} ${record.employee.last_name}`,
+      'Job Site': record.job_site.name,
+      'Date': format(new Date(record.date), 'MMM dd, yyyy'),
+      'Start Time': record.start_time,
+      'End Time': record.end_time,
+      'Hours': record.shift_hours,
+      'Deduct (min)': record.minute_deduct
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `attendance_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({ title: 'CSV file downloaded successfully' });
+  };
+
   if (loading) {
     return (
       <Card>
@@ -124,10 +172,20 @@ const AttendanceList = ({ onEdit, onAdd, refreshTrigger }: AttendanceListProps) 
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>Attendance Records</CardTitle>
-          <Button onClick={onAdd}>
-            <Plus className="h-4 w-4 mr-2" />
-            Record Attendance
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={exportToExcel}>
+              <Download className="h-4 w-4 mr-2" />
+              Export Excel
+            </Button>
+            <Button variant="outline" onClick={exportToCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+            <Button onClick={onAdd}>
+              <Plus className="h-4 w-4 mr-2" />
+              Record Attendance
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

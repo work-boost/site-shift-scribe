@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -175,6 +174,37 @@ const PayrollReport = () => {
     toast({ title: 'Excel file downloaded successfully' });
   };
 
+  const exportToCSV = () => {
+    const exportData = payrollData.map(record => ({
+      'Employee': `${record.first_name} ${record.last_name}`,
+      'Job Site': record.jobsite_name,
+      'Date': format(new Date(record.date), 'MMM dd, yyyy'),
+      'Total Hours': record.shift_hours,
+      'Regular Hours': record.regular_hours,
+      'Overtime Hours': record.overtime_hours,
+      'Regular Rate': `$${record.regular_rate?.toFixed(2) || '0.00'}`,
+      'Overtime Rate': `$${record.overtime_rate?.toFixed(2) || '0.00'}`,
+      'Regular Pay': `$${record.regular_pay?.toFixed(2) || '0.00'}`,
+      'Overtime Pay': `$${record.overtime_pay?.toFixed(2) || '0.00'}`,
+      'Total Pay': `$${record.total_pay?.toFixed(2) || '0.00'}`,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `payroll_report_${startDate}_to_${endDate}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({ title: 'CSV file downloaded successfully' });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -224,6 +254,10 @@ const PayrollReport = () => {
               <Button onClick={exportToExcel} variant="outline">
                 <Download className="h-4 w-4 mr-2" />
                 Export Excel
+              </Button>
+              <Button onClick={exportToCSV} variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
               </Button>
             </div>
 

@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Edit, Search, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 interface Employee {
   id: string;
@@ -71,14 +72,52 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
     onEdit(employee);
   };
 
-  const calculateTotalPay = (regularRate: number, overtimeRate: number, hoursWorked: number = 8) => {
-    if (hoursWorked <= 4) {
-      return hoursWorked * regularRate;
-    } else {
-      const regularHours = 4;
-      const overtimeHours = hoursWorked - 4;
-      return (regularHours * regularRate) + (overtimeHours * overtimeRate);
-    }
+  const exportToExcel = () => {
+    const exportData = employees.map(employee => ({
+      'Employee': `${employee.first_name} ${employee.last_name}`,
+      'Type': employee.type,
+      'Valid From': format(new Date(), 'MMM dd, yyyy'),
+      'Valid To': 'Ongoing',
+      'Regular Rate': `$${(employee.regular_rate || 0).toFixed(2)}/hr`,
+      'Overtime Rate': `$${(employee.overtime_rate || 0).toFixed(2)}/hr`,
+      'Status': 'Active'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Rate Cards');
+    
+    const fileName = `rate_cards_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    toast({ title: 'Excel file downloaded successfully' });
+  };
+
+  const exportToCSV = () => {
+    const exportData = employees.map(employee => ({
+      'Employee': `${employee.first_name} ${employee.last_name}`,
+      'Type': employee.type,
+      'Valid From': format(new Date(), 'MMM dd, yyyy'),
+      'Valid To': 'Ongoing',
+      'Regular Rate': `$${(employee.regular_rate || 0).toFixed(2)}/hr`,
+      'Overtime Rate': `$${(employee.overtime_rate || 0).toFixed(2)}/hr`,
+      'Status': 'Active'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `rate_cards_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({ title: 'CSV file downloaded successfully' });
   };
 
   if (loading) {
@@ -96,10 +135,20 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>Employee Rate Cards</CardTitle>
-          <Button onClick={onAdd}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Employee Rate
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={exportToExcel}>
+              <Download className="h-4 w-4 mr-2" />
+              Export Excel
+            </Button>
+            <Button variant="outline" onClick={exportToCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+            <Button onClick={onAdd}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Employee Rate
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -124,7 +173,6 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
                 <TableHead>Valid To</TableHead>
                 <TableHead>Regular Rate</TableHead>
                 <TableHead>Overtime Rate</TableHead>
-                <TableHead>Total Pay (8hrs)</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -146,9 +194,6 @@ const RateCardList = ({ onEdit, onAdd, refreshTrigger }: RateCardListProps) => {
                   </TableCell>
                   <TableCell>${(employee.regular_rate || 0).toFixed(2)}/hr</TableCell>
                   <TableCell>${(employee.overtime_rate || 0).toFixed(2)}/hr</TableCell>
-                  <TableCell className="font-semibold">
-                    ${calculateTotalPay(employee.regular_rate || 0, employee.overtime_rate || 0, 8).toFixed(2)}
-                  </TableCell>
                   <TableCell>
                     <Badge variant="default">Active</Badge>
                   </TableCell>
