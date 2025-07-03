@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Search, Upload, FileText, Image } from 'lucide-react';
+import ProjectManagerForm from './ProjectManagerForm';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -33,6 +34,7 @@ const ProjectManagerList = () => {
   const [projectManagers, setProjectManagers] = useState<ProjectManager[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     fetchProjectManagers();
@@ -64,6 +66,11 @@ const ProjectManagerList = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddSuccess = () => {
+    setShowForm(false);
+    fetchProjectManagers();
   };
 
   const exportToExcel = () => {
@@ -115,6 +122,10 @@ const ProjectManagerList = () => {
     toast.success('PDF file downloaded successfully');
   };
 
+  if (showForm) {
+    return <ProjectManagerForm onSuccess={handleAddSuccess} onCancel={() => setShowForm(false)} />;
+  }
+
   if (loading) {
     return (
       <Card>
@@ -139,7 +150,10 @@ const ProjectManagerList = () => {
               <FileText className="h-4 w-4 mr-2" />
               Export to PDF
             </Button>
-            <Button className="bg-indigo-700 hover:bg-indigo-800">
+            <Button 
+              onClick={() => setShowForm(true)}
+              className="bg-indigo-700 hover:bg-indigo-800"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Project Manager
             </Button>

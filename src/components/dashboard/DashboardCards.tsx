@@ -10,7 +10,7 @@ interface DashboardStats {
   totalJobSites: number;
   activeJobSites: number;
   todayAttendance: number;
-  weeklyHours: number;
+  totalPayroll: number;
 }
 
 const DashboardCards = () => {
@@ -20,7 +20,7 @@ const DashboardCards = () => {
     totalJobSites: 0,
     activeJobSites: 0,
     todayAttendance: 0,
-    weeklyHours: 0,
+    totalPayroll: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -55,18 +55,16 @@ const DashboardCards = () => {
 
       const todayAttendance = todayAttendanceData?.length || 0;
 
-      // Get this week's total hours
-      const weekStart = new Date();
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-      const weekStartStr = weekStart.toISOString().split('T')[0];
+      // Get total payroll from pay_report_view for current month
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+      const { data: payrollData } = await supabase
+        .from('pay_report_view')
+        .select('total_pay')
+        .gte('date', `${currentMonth}-01`)
+        .lt('date', `${currentMonth}-32`);
 
-      const { data: weeklyAttendance } = await supabase
-        .from('attendance')
-        .select('shift_hours')
-        .gte('date', weekStartStr);
-
-      const weeklyHours = weeklyAttendance?.reduce((total, record) => 
-        total + (parseFloat(String(record.shift_hours)) || 0), 0) || 0;
+      const totalPayroll = payrollData?.reduce((sum, record) => 
+        sum + (parseFloat(String(record.total_pay)) || 0), 0) || 0;
 
       setStats({
         totalEmployees,
@@ -74,7 +72,7 @@ const DashboardCards = () => {
         totalJobSites,
         activeJobSites,
         todayAttendance,
-        weeklyHours,
+        totalPayroll,
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -115,8 +113,8 @@ const DashboardCards = () => {
       color: 'bg-red-500',
     },
     {
-      title: 'Weekly Hours',
-      value: Math.round(stats.weeklyHours * 10) / 10,
+      title: 'Total Payroll',
+      value: `$${stats.totalPayroll.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: DollarSign,
       color: 'bg-indigo-500',
     },
