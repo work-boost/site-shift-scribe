@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Search, Upload, FileText, Image } from 'lucide-react';
 import ProjectManagerForm from './ProjectManagerForm';
+import ProjectManagerEditForm from './ProjectManagerEditForm';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -35,6 +35,7 @@ const ProjectManagerList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [editingPM, setEditingPM] = useState<ProjectManager | null>(null);
 
   useEffect(() => {
     fetchProjectManagers();
@@ -71,6 +72,36 @@ const ProjectManagerList = () => {
   const handleAddSuccess = () => {
     setShowForm(false);
     fetchProjectManagers();
+  };
+
+  const handleEditSuccess = () => {
+    setEditingPM(null);
+    fetchProjectManagers();
+  };
+
+  const handleEdit = (pm: ProjectManager) => {
+    setEditingPM(pm);
+  };
+
+  const handleToggleActive = async (pmId: string, currentActive: boolean) => {
+    try {
+      // For now, we'll create a simple active status toggle
+      // You might want to add an 'active' field to the employees table
+      const { error } = await supabase
+        .from('employees')
+        .update({ 
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', pmId);
+
+      if (error) throw error;
+
+      toast.success(`Project Manager ${currentActive ? 'deactivated' : 'activated'} successfully`);
+      fetchProjectManagers();
+    } catch (error: any) {
+      console.error('Error toggling active status:', error);
+      toast.error('Failed to update status');
+    }
   };
 
   const exportToExcel = () => {
@@ -124,6 +155,14 @@ const ProjectManagerList = () => {
 
   if (showForm) {
     return <ProjectManagerForm onSuccess={handleAddSuccess} onCancel={() => setShowForm(false)} />;
+  }
+
+  if (editingPM) {
+    return <ProjectManagerEditForm 
+      projectManager={editingPM} 
+      onSuccess={handleEditSuccess} 
+      onCancel={() => setEditingPM(null)} 
+    />;
   }
 
   if (loading) {
@@ -228,11 +267,13 @@ const ProjectManagerList = () => {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => handleEdit(pm)}
                         className="text-indigo-600 hover:bg-indigo-100"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
+                        onClick={() => handleToggleActive(pm.id, true)}
                         className="bg-cyan-500 hover:bg-cyan-600 text-white"
                         size="sm"
                       >
