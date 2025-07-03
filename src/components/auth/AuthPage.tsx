@@ -1,40 +1,40 @@
 
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { Building2 } from 'lucide-react';
 
 const AuthPage = () => {
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+    
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      if (error) throw error;
-
-      if (data.user) {
-        toast({ title: "Signed in successfully!" });
-        navigate('/');
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
-        title: "Error signing in",
-        description: error.message,
+        title: "Error",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -45,28 +45,29 @@ const AuthPage = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+    
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: redirectUrl
-        }
       });
-
-      if (error) throw error;
-
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Please check your email for verification link",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Account created successfully!",
-        description: "Please check your email to verify your account.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error creating account",
-        description: error.message,
+        title: "Error",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -75,11 +76,16 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-yellow-50 to-orange-100">
+      <Card className="w-[400px]">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Construction Manager</CardTitle>
-          <CardDescription>Attendance & Payroll System</CardDescription>
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
+              <Building2 className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-orange-700">ConstructCo</CardTitle>
+          <CardDescription>Sign in to manage your construction operations</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
@@ -91,9 +97,9 @@ const AuthPage = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="signin-email"
+                    id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -101,9 +107,9 @@ const AuthPage = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="password">Password</Label>
                   <Input
-                    id="signin-password"
+                    id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -136,7 +142,6 @@ const AuthPage = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
