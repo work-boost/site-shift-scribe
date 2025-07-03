@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
@@ -55,7 +56,7 @@ const reportsSubItems = [
 ];
 
 export function AppSidebar() {
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -64,11 +65,11 @@ export function AppSidebar() {
     isActive ? "bg-orange-100 text-orange-700 font-semibold border-r-4 border-orange-500" : "hover:bg-orange-50 text-orange-600";
 
   return (
-    <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible>
+    <Sidebar className={state === "collapsed" ? "w-16" : "w-64"} collapsible="icon">
       <SidebarContent className="bg-gradient-to-b from-orange-50 to-yellow-50">
         <SidebarGroup>
           <SidebarGroupLabel className="text-orange-800 font-bold text-lg">
-            {!collapsed && "ConstructCo"}
+            {state !== "collapsed" && "ConstructCo"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
@@ -76,7 +77,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <NavLink to="/" className={getNavCls}>
                     <Home className="mr-3 h-5 w-5" />
-                    {!collapsed && <span>Dashboard</span>}
+                    {state !== "collapsed" && <span>Dashboard</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -85,7 +86,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <NavLink to="/employees" className={getNavCls}>
                     <Users className="mr-3 h-5 w-5" />
-                    {!collapsed && <span>Employees</span>}
+                    {state !== "collapsed" && <span>Employees</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -94,7 +95,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <NavLink to="/job-sites" className={getNavCls}>
                     <Building2 className="mr-3 h-5 w-5" />
-                    {!collapsed && <span>Job Sites</span>}
+                    {state !== "collapsed" && <span>Job Sites</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -103,7 +104,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <NavLink to="/attendance" className={getNavCls}>
                     <Clock className="mr-3 h-5 w-5" />
-                    {!collapsed && <span>Attendance</span>}
+                    {state !== "collapsed" && <span>Attendance</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -112,7 +113,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <NavLink to="/rate-cards" className={getNavCls}>
                     <CreditCard className="mr-3 h-5 w-5" />
-                    {!collapsed && <span>Rate Cards</span>}
+                    {state !== "collapsed" && <span>Rate Cards</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -121,7 +122,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <NavLink to="/project-managers" className={getNavCls}>
                     <UserCheck className="mr-3 h-5 w-5" />
-                    {!collapsed && <span>Project Managers</span>}
+                    {state !== "collapsed" && <span>Project Managers</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -130,8 +131,8 @@ export function AppSidebar() {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton className="hover:bg-orange-50 text-orange-600">
                     <BarChart3 className="mr-3 h-5 w-5" />
-                    {!collapsed && <span>Reports</span>}
-                    {!collapsed && <ChevronDown className="ml-auto h-4 w-4" />}
+                    {state !== "collapsed" && <span>Reports</span>}
+                    {state !== "collapsed" && <ChevronDown className="ml-auto h-4 w-4" />}
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -140,7 +141,7 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild size="sm">
                         <NavLink to="/reports" className={getNavCls}>
                           <FileText className="mr-2 h-4 w-4" />
-                          {!collapsed && <span>Payroll Reports</span>}
+                          {state !== "collapsed" && <span>Payroll Reports</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -148,7 +149,7 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild size="sm">
                         <NavLink to="/weekly-reports" className={getNavCls}>
                           <Calendar className="mr-2 h-4 w-4" />
-                          {!collapsed && <span>Weekly Reports</span>}
+                          {state !== "collapsed" && <span>Weekly Reports</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -156,7 +157,7 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild size="sm">
                         <NavLink to="/master-reports" className={getNavCls}>
                           <BarChart3 className="mr-2 h-4 w-4" />
-                          {!collapsed && <span>Master Reports</span>}
+                          {state !== "collapsed" && <span>Master Reports</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -164,7 +165,7 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild size="sm">
                         <NavLink to="/employee-reports" className={getNavCls}>
                           <User className="mr-2 h-4 w-4" />
-                          {!collapsed && <span>Employee Reports</span>}
+                          {state !== "collapsed" && <span>Employee Reports</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
