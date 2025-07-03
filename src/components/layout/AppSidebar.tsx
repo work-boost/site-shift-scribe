@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
@@ -14,7 +13,10 @@ import {
   ChevronDown,
   ChevronRight,
   Calendar,
-  BarChart3
+  BarChart3,
+  Building2,
+  UserCheck,
+  User
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -53,139 +55,126 @@ const reportsSubItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { collapsed } = useSidebar();
   const location = useLocation();
-  const { signOut } = useAuth();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [reportsOpen, setReportsOpen] = useState(location.pathname.startsWith('/reports'));
+  const currentPath = location.pathname;
 
-  const handleSignOut = async () => {
-    setIsLoggingOut(true);
-    try {
-      await signOut();
-      toast.success('Logged out successfully');
-    } catch (error) {
-      toast.error('Failed to log out');
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
-  const isCollapsed = state === 'collapsed';
+  const isActive = (path: string) => currentPath === path;
+  const getNavCls = ({ isActive }: { isActive: boolean }) =>
+    isActive ? "bg-orange-100 text-orange-700 font-semibold border-r-4 border-orange-500" : "hover:bg-orange-50 text-orange-600";
 
   return (
-    <Sidebar className="border-r-2 border-orange-300 bg-gradient-to-b from-orange-50 via-orange-100 to-yellow-50 shadow-xl">
-      <SidebarHeader className="border-b-2 border-orange-300 p-6 bg-gradient-to-r from-orange-500 to-yellow-500">
-        <div className="flex items-center gap-4">
-          <div className="bg-white p-3 rounded-xl shadow-lg">
-            <HardHat className="h-8 w-8 text-orange-600" />
-          </div>
-          {!isCollapsed && (
-            <div>
-              <h1 className="font-bold text-white text-xl tracking-wide">ConstructCo</h1>
-              <p className="text-sm text-orange-100 font-medium">Management System</p>
-            </div>
-          )}
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent className="p-4">
+    <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible>
+      <SidebarContent className="bg-gradient-to-b from-orange-50 to-yellow-50">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-orange-800 font-bold text-sm uppercase tracking-wide mb-3">
-            {!isCollapsed && 'Main Menu'}
+          <SidebarGroupLabel className="text-orange-800 font-bold text-lg">
+            {!collapsed && "ConstructCo"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
-              {menuItems.map((item) => {
-                const isActive = location.pathname === item.url;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
-                          isActive
-                            ? 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg transform scale-105'
-                            : 'text-orange-800 hover:bg-orange-200 hover:text-orange-900 hover:shadow-md'
-                        }`}
-                      >
-                        <item.icon className="h-5 w-5" />
-                        {!isCollapsed && <span className="font-semibold">{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-              
-              {/* Reports with sub-menu */}
               <SidebarMenuItem>
-                <Collapsible open={reportsOpen} onOpenChange={setReportsOpen}>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-300 w-full ${
-                      location.pathname.startsWith('/reports')
-                        ? 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg'
-                        : 'text-orange-800 hover:bg-orange-200 hover:text-orange-900 hover:shadow-md'
-                    }`}>
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5" />
-                        {!isCollapsed && <span className="font-semibold">Reports</span>}
-                      </div>
-                      {!isCollapsed && (
-                        reportsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
-                      )}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  {!isCollapsed && (
-                    <CollapsibleContent>
-                      <SidebarMenuSub className="ml-4 mt-2 space-y-1">
-                        {reportsSubItems.map((subItem) => {
-                          const isSubActive = location.pathname === subItem.url;
-                          return (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild>
-                                <NavLink
-                                  to={subItem.url}
-                                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-                                    isSubActive
-                                      ? 'bg-orange-400 text-white shadow-md'
-                                      : 'text-orange-700 hover:bg-orange-150 hover:text-orange-900'
-                                  }`}
-                                >
-                                  <subItem.icon className="h-4 w-4" />
-                                  <span className="font-medium text-sm">{subItem.title}</span>
-                                </NavLink>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          );
-                        })}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  )}
-                </Collapsible>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/" className={getNavCls}>
+                    <Home className="mr-3 h-5 w-5" />
+                    {!collapsed && <span>Dashboard</span>}
+                  </NavLink>
+                </SidebarMenuButton>
               </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/employees" className={getNavCls}>
+                    <Users className="mr-3 h-5 w-5" />
+                    {!collapsed && <span>Employees</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/job-sites" className={getNavCls}>
+                    <Building2 className="mr-3 h-5 w-5" />
+                    {!collapsed && <span>Job Sites</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/attendance" className={getNavCls}>
+                    <Clock className="mr-3 h-5 w-5" />
+                    {!collapsed && <span>Attendance</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/rate-cards" className={getNavCls}>
+                    <CreditCard className="mr-3 h-5 w-5" />
+                    {!collapsed && <span>Rate Cards</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/project-managers" className={getNavCls}>
+                    <UserCheck className="mr-3 h-5 w-5" />
+                    {!collapsed && <span>Project Managers</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton className="hover:bg-orange-50 text-orange-600">
+                    <BarChart3 className="mr-3 h-5 w-5" />
+                    {!collapsed && <span>Reports</span>}
+                    {!collapsed && <ChevronDown className="ml-auto h-4 w-4" />}
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenu className="ml-6 space-y-1">
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild size="sm">
+                        <NavLink to="/reports" className={getNavCls}>
+                          <FileText className="mr-2 h-4 w-4" />
+                          {!collapsed && <span>Payroll Reports</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild size="sm">
+                        <NavLink to="/weekly-reports" className={getNavCls}>
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {!collapsed && <span>Weekly Reports</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild size="sm">
+                        <NavLink to="/master-reports" className={getNavCls}>
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          {!collapsed && <span>Master Reports</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild size="sm">
+                        <NavLink to="/employee-reports" className={getNavCls}>
+                          <User className="mr-2 h-4 w-4" />
+                          {!collapsed && <span>Employee Reports</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </CollapsibleContent>
+              </Collapsible>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="border-t-2 border-orange-300 p-4 bg-gradient-to-r from-orange-100 to-yellow-100">
-        <div className="flex items-center gap-3">
-          <SidebarTrigger className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-lg rounded-lg p-2">
-            <Menu className="h-4 w-4" />
-          </SidebarTrigger>
-          {!isCollapsed && (
-            <Button
-              onClick={handleSignOut}
-              disabled={isLoggingOut}
-              variant="ghost"
-              className="flex-1 justify-start text-orange-800 hover:bg-orange-200 hover:text-orange-900 rounded-lg font-semibold"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              {isLoggingOut ? 'Logging out...' : 'Logout'}
-            </Button>
-          )}
-        </div>
-      </SidebarFooter>
     </Sidebar>
   );
 }

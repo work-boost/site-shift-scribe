@@ -31,10 +31,10 @@ const AttendancePage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Attendance</h2>
-        <p className="text-muted-foreground">
-          Track employee attendance and work hours
+      <div className="bg-gradient-to-r from-orange-500 to-yellow-500 p-6 rounded-xl shadow-lg">
+        <h2 className="text-3xl font-bold tracking-tight text-white">Attendance Management</h2>
+        <p className="text-orange-100 mt-2">
+          Track employee attendance and work hours with full CRUD operations
         </p>
       </div>
       
