@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';
 import { Edit, Trash2, Search, Plus, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -141,145 +142,170 @@ const JobSiteList = ({ onEdit, onAdd, refreshTrigger }: JobSiteListProps) => {
   };
 
   return (
-    <Card className="border-2 border-green-200 shadow-2xl bg-white">
-      <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-2xl font-bold">Job Sites Management</CardTitle>
-          <div className="flex gap-3">
-            <Button 
-              onClick={exportToExcel} 
-              variant="outline" 
-              className="border-2 border-white text-white hover:bg-white hover:text-green-600 font-medium"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export Excel
-            </Button>
-            <Button 
-              onClick={onAdd}
-              className="bg-white text-green-600 hover:bg-green-50 font-medium shadow-lg"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Job Site
-            </Button>
-          </div>
-        </div>
-        <div className="flex items-center space-x-4 mt-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-300" />
-            <Input
-              placeholder="Search job sites..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-2 border-green-300 bg-white/90 text-gray-800 placeholder-gray-500 focus:border-white"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'all' | JobSiteStatus)}>
-            <SelectTrigger className="w-48 border-2 border-green-300 bg-white/90 text-gray-800 focus:border-white">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-2 border-green-200 shadow-lg">
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="Planning">Planning</SelectItem>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="On Hold">On Hold</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
-              <SelectItem value="Cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardHeader>
-      <CardContent className="p-6">
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto rounded-lg border-2 border-green-100 shadow-lg">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-green-50 border-b-2 border-green-200">
-                    <TableHead className="font-bold text-green-800 text-lg">Name</TableHead>
-                    <TableHead className="font-bold text-green-800 text-lg">Address</TableHead>
-                    <TableHead className="font-bold text-green-800 text-lg">Project Manager</TableHead>
-                    <TableHead className="font-bold text-green-800 text-lg">Status</TableHead>
-                    <TableHead className="font-bold text-green-800 text-lg">Start Date</TableHead>
-                    <TableHead className="font-bold text-green-800 text-lg">End Date</TableHead>
-                    <TableHead className="font-bold text-green-800 text-lg">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {jobSites.map((site, index) => (
-                    <TableRow key={site.id} className={`hover:bg-green-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                      <TableCell className="font-semibold text-gray-800 text-lg">{site.name}</TableCell>
-                      <TableCell className="text-gray-600">{site.address || '-'}</TableCell>
-                      <TableCell className="text-gray-600">{site.pm_name}</TableCell>
-                      <TableCell>
-                        <Badge className={`${getStatusColor(site.status)} border font-medium text-sm px-3 py-1`}>
-                          {site.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-600">{site.start_date || '-'}</TableCell>
-                      <TableCell className="text-gray-600">{site.end_date || '-'}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => onEdit(site)}
-                            className="border-2 border-green-200 text-green-600 hover:bg-green-500 hover:text-white"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => deleteJobSite(site.id)}
-                            className="border-2 border-red-200 text-red-600 hover:bg-red-500 hover:text-white"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+    <TooltipProvider>
+      <Card className="border-2 border-green-200 shadow-2xl bg-white">
+        <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-2xl font-bold">Job Sites Management</CardTitle>
+            <div className="flex gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={exportToExcel} 
+                    variant="outline" 
+                    className="border-2 border-white text-white hover:bg-white hover:text-green-600 font-medium"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Excel
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Export job sites to Excel file</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Button 
+                onClick={onAdd}
+                className="bg-white text-green-600 hover:bg-green-50 font-medium shadow-lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Job Site
+              </Button>
             </div>
+          </div>
+          <div className="flex items-center space-x-4 mt-4">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-300" />
+              <Input
+                placeholder="Search job sites..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 border-2 border-green-300 bg-white/90 text-gray-800 placeholder-gray-500 focus:border-white"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'all' | JobSiteStatus)}>
+              <SelectTrigger className="w-48 border-2 border-green-300 bg-white/90 text-gray-800 focus:border-white">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-2 border-green-200 shadow-lg">
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Planning">Planning</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="On Hold">On Hold</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="Cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto rounded-lg border-2 border-green-100 shadow-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-green-50 border-b-2 border-green-200">
+                      <TableHead className="font-bold text-green-800 text-lg">Name</TableHead>
+                      <TableHead className="font-bold text-green-800 text-lg">Address</TableHead>
+                      <TableHead className="font-bold text-green-800 text-lg">Project Manager</TableHead>
+                      <TableHead className="font-bold text-green-800 text-lg">Status</TableHead>
+                      <TableHead className="font-bold text-green-800 text-lg">Start Date</TableHead>
+                      <TableHead className="font-bold text-green-800 text-lg">End Date</TableHead>
+                      <TableHead className="font-bold text-green-800 text-lg">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {jobSites.map((site, index) => (
+                      <TableRow key={site.id} className={`hover:bg-green-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                        <TableCell className="font-semibold text-gray-800 text-lg">{site.name}</TableCell>
+                        <TableCell className="text-gray-600">{site.address || '-'}</TableCell>
+                        <TableCell className="text-gray-600">{site.pm_name}</TableCell>
+                        <TableCell>
+                          <Badge className={`${getStatusColor(site.status)} border font-medium text-sm px-3 py-1`}>
+                            {site.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-gray-600">{site.start_date || '-'}</TableCell>
+                        <TableCell className="text-gray-600">{site.end_date || '-'}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => onEdit(site)}
+                                  className="border-2 border-green-200 text-green-600 hover:bg-green-500 hover:text-white"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Edit job site</p>
+                              </TooltipContent>
+                            </Tooltip>
 
-            {jobSites.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-xl text-gray-500">No job sites found matching your criteria</p>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => deleteJobSite(site.id)}
+                                  className="border-2 border-red-200 text-red-600 hover:bg-red-500 hover:text-white"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete job site</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-            )}
 
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-8 space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="border-2 border-green-200 text-green-600 hover:bg-green-500 hover:text-white font-medium"
-                >
-                  Previous
-                </Button>
-                <span className="flex items-center px-6 py-2 bg-green-100 text-green-800 rounded-lg font-medium">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="border-2 border-green-200 text-green-600 hover:bg-green-500 hover:text-white font-medium"
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+              {jobSites.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-xl text-gray-500">No job sites found matching your criteria</p>
+                </div>
+              )}
+
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-8 space-x-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="border-2 border-green-200 text-green-600 hover:bg-green-500 hover:text-white font-medium"
+                  >
+                    Previous
+                  </Button>
+                  <span className="flex items-center px-6 py-2 bg-green-100 text-green-800 rounded-lg font-medium">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="border-2 border-green-200 text-green-600 hover:bg-green-500 hover:text-white font-medium"
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 };
 

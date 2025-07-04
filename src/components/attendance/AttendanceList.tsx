@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Search, Calendar, Download } from 'lucide-react';
 import { format } from 'date-fns';
@@ -171,148 +171,181 @@ const AttendanceList = ({ onEdit, onAdd, refreshTrigger }: AttendanceListProps) 
   }
 
   return (
-    <Card className="border-2 border-orange-200 shadow-2xl bg-white">
-      <CardHeader className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-t-lg">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-2xl font-bold">Attendance Records</CardTitle>
-          <div className="flex gap-3">
-            <Button 
-              variant="outline" 
-              onClick={exportToExcel}
-              className="border-2 border-white text-white hover:bg-white hover:text-orange-600 font-medium"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export Excel
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={exportToCSV}
-              className="border-2 border-white text-white hover:bg-white hover:text-orange-600 font-medium"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-            <Button 
-              onClick={onAdd}
-              className="bg-white text-orange-600 hover:bg-orange-50 font-medium shadow-lg"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Record Attendance
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-6">
-        <div className="flex gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-orange-400" />
-            <Input
-              placeholder="Search by employee or job site..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-2 border-orange-200 focus:border-orange-500 text-lg p-3"
-            />
-          </div>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-orange-400" />
-            <Input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="pl-10 w-48 border-2 border-orange-200 focus:border-orange-500 text-lg p-3"
-            />
-          </div>
-        </div>
+    <TooltipProvider>
+      <Card className="border-2 border-orange-200 shadow-2xl bg-white">
+        <CardHeader className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-t-lg">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-2xl font-bold">Attendance Records</CardTitle>
+            <div className="flex gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    onClick={exportToExcel}
+                    className="border-2 border-white text-white hover:bg-white hover:text-orange-600 font-medium"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Excel
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Export attendance records to Excel file</p>
+                </TooltipContent>
+              </Tooltip>
 
-        <div className="overflow-x-auto rounded-lg border-2 border-orange-100 shadow-lg">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-orange-50 border-b-2 border-orange-200">
-                <TableHead className="font-bold text-orange-800 text-lg">Employee</TableHead>
-                <TableHead className="font-bold text-orange-800 text-lg">Job Site</TableHead>
-                <TableHead className="font-bold text-orange-800 text-lg">Date</TableHead>
-                <TableHead className="font-bold text-orange-800 text-lg">Start Time</TableHead>
-                <TableHead className="font-bold text-orange-800 text-lg">End Time</TableHead>
-                <TableHead className="font-bold text-orange-800 text-lg">Hours</TableHead>
-                <TableHead className="font-bold text-orange-800 text-lg">Deduct (min)</TableHead>
-                <TableHead className="font-bold text-orange-800 text-lg">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {attendance.map((record, index) => (
-                <TableRow key={record.id} className={`hover:bg-orange-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                  <TableCell className="font-semibold text-gray-800 text-lg">
-                    {record.employee.first_name} {record.employee.last_name}
-                  </TableCell>
-                  <TableCell className="text-gray-600">{record.job_site.name}</TableCell>
-                  <TableCell className="text-gray-600">{format(new Date(record.date), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell className="text-gray-600">{record.start_time}</TableCell>
-                  <TableCell className="text-gray-600">{record.end_time}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="bg-orange-100 text-orange-800 border border-orange-300 font-medium text-sm px-3 py-1">
-                      {record.shift_hours} hrs
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-gray-600">{record.minute_deduct}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEdit(record)}
-                        className="border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(record.id)}
-                        className="border-2 border-red-200 text-red-600 hover:bg-red-500 hover:text-white"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    onClick={exportToCSV}
+                    className="border-2 border-white text-white hover:bg-white hover:text-orange-600 font-medium"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    CSV
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Export attendance records to CSV file</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Button 
+                onClick={onAdd}
+                className="bg-white text-orange-600 hover:bg-orange-50 font-medium shadow-lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Record Attendance
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="flex gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-orange-400" />
+              <Input
+                placeholder="Search by employee or job site..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 border-2 border-orange-200 focus:border-orange-500 text-lg p-3"
+              />
+            </div>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-orange-400" />
+              <Input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="pl-10 w-48 border-2 border-orange-200 focus:border-orange-500 text-lg p-3"
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border-2 border-orange-100 shadow-lg">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-orange-50 border-b-2 border-orange-200">
+                  <TableHead className="font-bold text-orange-800 text-lg">Employee</TableHead>
+                  <TableHead className="font-bold text-orange-800 text-lg">Job Site</TableHead>
+                  <TableHead className="font-bold text-orange-800 text-lg">Date</TableHead>
+                  <TableHead className="font-bold text-orange-800 text-lg">Start Time</TableHead>
+                  <TableHead className="font-bold text-orange-800 text-lg">End Time</TableHead>
+                  <TableHead className="font-bold text-orange-800 text-lg">Hours</TableHead>
+                  <TableHead className="font-bold text-orange-800 text-lg">Deduct (min)</TableHead>
+                  <TableHead className="font-bold text-orange-800 text-lg">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {attendance.map((record, index) => (
+                  <TableRow key={record.id} className={`hover:bg-orange-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                    <TableCell className="font-semibold text-gray-800 text-lg">
+                      {record.employee.first_name} {record.employee.last_name}
+                    </TableCell>
+                    <TableCell className="text-gray-600">{record.job_site.name}</TableCell>
+                    <TableCell className="text-gray-600">{format(new Date(record.date), 'MMM dd, yyyy')}</TableCell>
+                    <TableCell className="text-gray-600">{record.start_time}</TableCell>
+                    <TableCell className="text-gray-600">{record.end_time}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-800 border border-orange-300 font-medium text-sm px-3 py-1">
+                        {record.shift_hours} hrs
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-gray-600">{record.minute_deduct}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onEdit(record)}
+                              className="border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Edit attendance record</p>
+                          </TooltipContent>
+                        </Tooltip>
 
-        {attendance.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-xl text-gray-500">No attendance records found</p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(record.id)}
+                              className="border-2 border-red-200 text-red-600 hover:bg-red-500 hover:text-white"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Delete attendance record</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-        )}
 
-        {totalPages > 1 && (
-          <div className="flex justify-center gap-3 mt-8">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white font-medium"
-            >
-              Previous
-            </Button>
-            <span className="px-6 py-2 bg-orange-100 text-orange-800 rounded-lg font-medium">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className="border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white font-medium"
-            >
-              Next
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {attendance.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-xl text-gray-500">No attendance records found</p>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-3 mt-8">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white font-medium"
+              >
+                Previous
+              </Button>
+              <span className="px-6 py-2 bg-orange-100 text-orange-800 rounded-lg font-medium">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white font-medium"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 };
 
