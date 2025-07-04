@@ -30,11 +30,11 @@ const JobSitesPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Job Sites</h2>
-        <p className="text-muted-foreground">
-          Manage construction job sites and projects
+    <div className="space-y-6 p-4 sm:p-0">
+      <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-xl shadow-lg">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">Job Site Management</h2>
+        <p className="text-green-100 mt-2">
+          Manage construction job sites, projects, and their status
         </p>
       </div>
       

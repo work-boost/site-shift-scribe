@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -64,7 +63,7 @@ const ProjectManagerList = () => {
 
       if (error) throw error;
       
-      // Add is_active field based on some logic (you can modify this)
+      // Add is_active field based on updated_at timestamp
       const managersWithStatus = data?.map(pm => ({
         ...pm,
         is_active: pm.updated_at ? new Date(pm.updated_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : true
@@ -95,12 +94,14 @@ const ProjectManagerList = () => {
 
   const handleToggleActive = async (pmId: string, currentActive: boolean) => {
     try {
+      // Update the database with a timestamp that determines active status
+      const updateData = currentActive 
+        ? { updated_at: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString() } // Set to 31 days ago (inactive)
+        : { updated_at: new Date().toISOString() }; // Set to now (active)
+
       const { error } = await supabase
         .from('employees')
-        .update({ 
-          updated_at: new Date().toISOString(),
-          // You might want to add an actual 'active' column to track this properly
-        })
+        .update(updateData)
         .eq('id', pmId);
 
       if (error) throw error;
