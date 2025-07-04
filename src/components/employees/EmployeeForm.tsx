@@ -136,47 +136,57 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }: EmployeeFormProps) => {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>{employee ? 'Edit Employee' : 'Add Employee'}</CardTitle>
+    <Card className="w-full max-w-3xl mx-auto border-2 border-blue-300 shadow-xl">
+      <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg">
+        <CardTitle className="text-2xl font-bold">
+          {employee ? 'Edit Employee' : 'Add Employee'}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="first_name">First Name</Label>
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="first_name" className="text-blue-800 font-semibold text-lg">
+                First Name *
+              </Label>
               <Input
                 id="first_name"
                 {...register('first_name')}
                 placeholder="Enter first name"
+                className="border-2 border-blue-200 focus:border-blue-500 text-lg p-3"
               />
               {errors.first_name && (
-                <p className="text-sm text-red-500">{errors.first_name.message}</p>
+                <p className="text-sm text-red-500 font-medium">{errors.first_name.message}</p>
               )}
             </div>
-            <div>
-              <Label htmlFor="last_name">Last Name</Label>
+            <div className="space-y-2">
+              <Label htmlFor="last_name" className="text-blue-800 font-semibold text-lg">
+                Last Name *
+              </Label>
               <Input
                 id="last_name"
                 {...register('last_name')}
                 placeholder="Enter last name"
+                className="border-2 border-blue-200 focus:border-blue-500 text-lg p-3"
               />
               {errors.last_name && (
-                <p className="text-sm text-red-500">{errors.last_name.message}</p>
+                <p className="text-sm text-red-500 font-medium">{errors.last_name.message}</p>
               )}
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="type">Employee Type</Label>
+          <div className="space-y-2">
+            <Label htmlFor="type" className="text-blue-800 font-semibold text-lg">
+              Employee Type
+            </Label>
             <Select
               onValueChange={(value) => setValue('type', value as any)}
               defaultValue={employee?.type || 'Employee'}
             >
-              <SelectTrigger>
+              <SelectTrigger className="border-2 border-blue-200 focus:border-blue-500 text-lg p-3 h-auto">
                 <SelectValue placeholder="Select employee type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border-2 border-blue-200 shadow-lg">
                 <SelectItem value="Employee">Employee</SelectItem>
                 <SelectItem value="Foreman">Foreman</SelectItem>
                 <SelectItem value="PM">Project Manager</SelectItem>
@@ -184,54 +194,63 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }: EmployeeFormProps) => {
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="mobile_number">Mobile Number</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="mobile_number" className="text-blue-800 font-semibold text-lg">
+                Mobile Number
+              </Label>
               <Input
                 id="mobile_number"
                 {...register('mobile_number')}
                 placeholder="Enter mobile number"
+                className="border-2 border-blue-200 focus:border-blue-500 text-lg p-3"
               />
             </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-blue-800 font-semibold text-lg">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
                 {...register('email')}
                 placeholder="Enter email"
+                className="border-2 border-blue-200 focus:border-blue-500 text-lg p-3"
               />
               {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
+                <p className="text-sm text-red-500 font-medium">{errors.email.message}</p>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="sst_number">SST Number</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="sst_number" className="text-blue-800 font-semibold text-lg">
+                SST Number
+              </Label>
               <Input
                 id="sst_number"
                 {...register('sst_number')}
                 placeholder="Enter SST number"
+                className="border-2 border-blue-200 focus:border-blue-500 text-lg p-3"
               />
             </div>
-            <div>
-              <Label>SST Expiry Date</Label>
+            <div className="space-y-2">
+              <Label className="text-blue-800 font-semibold text-lg">SST Expiry Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal border-2 border-blue-200 focus:border-blue-500 text-lg p-3 h-auto",
                       !watchedDate && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 h-5 w-5" />
                     {watchedDate ? format(watchedDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0 bg-white border-2 border-blue-200 shadow-lg">
                   <Calendar
                     mode="single"
                     selected={watchedDate}
@@ -244,44 +263,62 @@ const EmployeeForm = ({ employee, onSuccess, onCancel }: EmployeeFormProps) => {
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="sst_image">SST Certificate Image</Label>
+          <div className="space-y-2">
+            <Label htmlFor="sst_image" className="text-blue-800 font-semibold text-lg">
+              SST Certificate Image
+            </Label>
             <Input
               id="sst_image"
               type="file"
               accept="image/*"
               onChange={(e) => setSstFile(e.target.files?.[0] || null)}
+              className="border-2 border-blue-200 focus:border-blue-500 text-lg p-3"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="regular_rate">Regular Rate ($)</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="regular_rate" className="text-blue-800 font-semibold text-lg">
+                Regular Rate ($)
+              </Label>
               <Input
                 id="regular_rate"
                 type="number"
                 step="0.01"
                 {...register('regular_rate', { valueAsNumber: true })}
                 placeholder="0.00"
+                className="border-2 border-blue-200 focus:border-blue-500 text-lg p-3"
               />
             </div>
-            <div>
-              <Label htmlFor="overtime_rate">Overtime Rate ($)</Label>
+            <div className="space-y-2">
+              <Label htmlFor="overtime_rate" className="text-blue-800 font-semibold text-lg">
+                Overtime Rate ($)
+              </Label>
               <Input
                 id="overtime_rate"
                 type="number"
                 step="0.01"
                 {...register('overtime_rate', { valueAsNumber: true })}
                 placeholder="0.00"
+                className="border-2 border-blue-200 focus:border-blue-500 text-lg p-3"
               />
             </div>
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button type="submit" disabled={loading}>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg font-medium"
+            >
               {loading ? 'Saving...' : employee ? 'Update Employee' : 'Add Employee'}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-3 text-lg font-medium"
+            >
               Cancel
             </Button>
           </div>

@@ -123,44 +123,54 @@ const JobSiteForm = ({ jobSite, onSuccess, onCancel }: JobSiteFormProps) => {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>{jobSite ? 'Edit Job Site' : 'Add Job Site'}</CardTitle>
+    <Card className="w-full max-w-3xl mx-auto border-2 border-green-300 shadow-xl">
+      <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
+        <CardTitle className="text-2xl font-bold">
+          {jobSite ? 'Edit Job Site' : 'Add Job Site'}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Job Site Name</Label>
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-green-800 font-semibold text-lg">
+              Job Site Name *
+            </Label>
             <Input
               id="name"
               {...register('name')}
               placeholder="Enter job site name"
+              className="border-2 border-green-200 focus:border-green-500 text-lg p-3"
             />
             {errors.name && (
-              <p className="text-sm text-red-500">{errors.name.message}</p>
+              <p className="text-sm text-red-500 font-medium">{errors.name.message}</p>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="address">Address</Label>
+          <div className="space-y-2">
+            <Label htmlFor="address" className="text-green-800 font-semibold text-lg">
+              Address
+            </Label>
             <Textarea
               id="address"
               {...register('address')}
               placeholder="Enter job site address"
               rows={3}
+              className="border-2 border-green-200 focus:border-green-500 text-lg p-3"
             />
           </div>
 
-          <div>
-            <Label htmlFor="assigned_pm">Assigned Project Manager</Label>
+          <div className="space-y-2">
+            <Label htmlFor="assigned_pm" className="text-green-800 font-semibold text-lg">
+              Assigned Project Manager
+            </Label>
             <Select
               onValueChange={(value) => setValue('assigned_pm', value === 'none' ? undefined : value)}
               defaultValue={jobSite?.assigned_pm || 'none'}
             >
-              <SelectTrigger>
+              <SelectTrigger className="border-2 border-green-200 focus:border-green-500 text-lg p-3 h-auto">
                 <SelectValue placeholder="Select project manager" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border-2 border-green-200 shadow-lg">
                 <SelectItem value="none">No PM assigned</SelectItem>
                 {projectManagers.map((pm) => (
                   <SelectItem key={pm.id} value={pm.id}>
@@ -171,23 +181,23 @@ const JobSiteForm = ({ jobSite, onSuccess, onCancel }: JobSiteFormProps) => {
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Start Date</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label className="text-green-800 font-semibold text-lg">Start Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal border-2 border-green-200 focus:border-green-500 text-lg p-3 h-auto",
                       !watchedStartDate && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 h-5 w-5" />
                     {watchedStartDate ? format(watchedStartDate, "PPP") : "Pick start date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0 bg-white border-2 border-green-200 shadow-lg">
                   <Calendar
                     mode="single"
                     selected={watchedStartDate}
@@ -198,22 +208,22 @@ const JobSiteForm = ({ jobSite, onSuccess, onCancel }: JobSiteFormProps) => {
                 </PopoverContent>
               </Popover>
             </div>
-            <div>
-              <Label>End Date</Label>
+            <div className="space-y-2">
+              <Label className="text-green-800 font-semibold text-lg">End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal border-2 border-green-200 focus:border-green-500 text-lg p-3 h-auto",
                       !watchedEndDate && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 h-5 w-5" />
                     {watchedEndDate ? format(watchedEndDate, "PPP") : "Pick end date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0 bg-white border-2 border-green-200 shadow-lg">
                   <Calendar
                     mode="single"
                     selected={watchedEndDate}
@@ -226,16 +236,18 @@ const JobSiteForm = ({ jobSite, onSuccess, onCancel }: JobSiteFormProps) => {
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="status">Status</Label>
+          <div className="space-y-2">
+            <Label htmlFor="status" className="text-green-800 font-semibold text-lg">
+              Status
+            </Label>
             <Select
               onValueChange={(value) => setValue('status', value as any)}
               defaultValue={jobSite?.status || 'Planning'}
             >
-              <SelectTrigger>
+              <SelectTrigger className="border-2 border-green-200 focus:border-green-500 text-lg p-3 h-auto">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border-2 border-green-200 shadow-lg">
                 <SelectItem value="Planning">Planning</SelectItem>
                 <SelectItem value="Active">Active</SelectItem>
                 <SelectItem value="On Hold">On Hold</SelectItem>
@@ -246,10 +258,19 @@ const JobSiteForm = ({ jobSite, onSuccess, onCancel }: JobSiteFormProps) => {
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button type="submit" disabled={loading}>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-lg font-medium"
+            >
               {loading ? 'Saving...' : jobSite ? 'Update Job Site' : 'Add Job Site'}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              className="border-2 border-green-200 text-green-600 hover:bg-green-50 px-6 py-3 text-lg font-medium"
+            >
               Cancel
             </Button>
           </div>
