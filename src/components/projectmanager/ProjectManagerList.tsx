@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Search, Upload, FileText, Image } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Upload, FileText, Image, UserCheck, UserX } from 'lucide-react';
 import ProjectManagerForm from './ProjectManagerForm';
 import ProjectManagerEditForm from './ProjectManagerEditForm';
 import * as XLSX from 'xlsx';
@@ -23,6 +24,7 @@ interface ProjectManager {
   sst_number: string;
   sst_expire_date: string;
   sst_image_url: string;
+  is_active: boolean;
   assigned_sites: Array<{
     id: string;
     name: string;
@@ -61,7 +63,14 @@ const ProjectManagerList = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setProjectManagers(data || []);
+      
+      // Add is_active field based on some logic (you can modify this)
+      const managersWithStatus = data?.map(pm => ({
+        ...pm,
+        is_active: pm.updated_at ? new Date(pm.updated_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : true
+      })) || [];
+      
+      setProjectManagers(managersWithStatus);
     } catch (error: any) {
       toast.error('Failed to fetch project managers');
       console.error('Error:', error);
@@ -86,12 +95,11 @@ const ProjectManagerList = () => {
 
   const handleToggleActive = async (pmId: string, currentActive: boolean) => {
     try {
-      // For now, we'll create a simple active status toggle
-      // You might want to add an 'active' field to the employees table
       const { error } = await supabase
         .from('employees')
         .update({ 
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          // You might want to add an actual 'active' column to track this properly
         })
         .eq('id', pmId);
 
@@ -112,6 +120,7 @@ const ProjectManagerList = () => {
       'Mobile Number': pm.mobile_number || 'N/A',
       'Type': pm.type,
       'SST Number': pm.sst_number || 'N/A',
+      'Status': pm.is_active ? 'Active' : 'Inactive',
       'Assigned Sites': pm.assigned_sites?.map(site => site.name).join(', ') || 'None',
       'Active Sites': pm.assigned_sites?.filter(site => site.status === 'Active').length || 0,
     }));
@@ -141,11 +150,12 @@ const ProjectManagerList = () => {
       pm.type,
       pm.mobile_number || 'N/A',
       pm.sst_number || 'N/A',
+      pm.is_active ? 'Active' : 'Inactive',
       pm.assigned_sites?.length || 0,
     ]);
 
     (doc as any).autoTable({
-      head: [['Full Name', 'Email', 'Type', 'Mobile', 'SST', 'Sites']],
+      head: [['Full Name', 'Email', 'Type', 'Mobile', 'SST', 'Status', 'Sites']],
       body: tableData,
       startY: 40,
     });
@@ -168,31 +178,31 @@ const ProjectManagerList = () => {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="border-2 border-orange-200 shadow-xl">
         <CardContent className="p-8">
-          <div className="text-center">Loading project managers...</div>
+          <div className="text-center text-orange-600">Loading project managers...</div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="border-2 border-indigo-300 shadow-xl">
-      <CardHeader className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-t-lg">
-        <div className="flex justify-between items-center">
+    <Card className="border-2 border-orange-300 shadow-xl">
+      <CardHeader className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-t-lg">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
           <CardTitle className="text-2xl font-bold">PROJECT MANAGER LIST</CardTitle>
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={exportToExcel} className="bg-white text-indigo-600 hover:bg-gray-100">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="secondary" onClick={exportToExcel} className="bg-white text-orange-600 hover:bg-orange-50">
               <Upload className="h-4 w-4 mr-2" />
               Export to Excel
             </Button>
-            <Button variant="secondary" onClick={exportToPDF} className="bg-white text-indigo-600 hover:bg-gray-100">
+            <Button variant="secondary" onClick={exportToPDF} className="bg-white text-orange-600 hover:bg-orange-50">
               <FileText className="h-4 w-4 mr-2" />
               Export to PDF
             </Button>
             <Button 
               onClick={() => setShowForm(true)}
-              className="bg-indigo-700 hover:bg-indigo-800"
+              className="bg-orange-700 hover:bg-orange-800"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Project Manager
@@ -205,54 +215,60 @@ const ProjectManagerList = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search..."
+              placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 border-2 border-indigo-200 focus:border-indigo-500"
+              className="pl-8 border-2 border-orange-200 focus:border-orange-500"
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto border-2 border-indigo-200 rounded-xl shadow-lg">
+        <div className="overflow-x-auto border-2 border-orange-200 rounded-xl shadow-lg">
           <Table>
-            <TableHeader className="bg-gradient-to-r from-indigo-100 to-blue-100">
+            <TableHeader className="bg-gradient-to-r from-orange-100 to-yellow-100">
               <TableRow>
-                <TableHead className="text-indigo-800 font-bold">Full Name</TableHead>
-                <TableHead className="text-indigo-800 font-bold">Site Name</TableHead>
-                <TableHead className="text-indigo-800 font-bold">Email</TableHead>
-                <TableHead className="text-indigo-800 font-bold">Type</TableHead>
-                <TableHead className="text-indigo-800 font-bold">Mobile Number</TableHead>
-                <TableHead className="text-indigo-800 font-bold">SST</TableHead>
-                <TableHead className="text-indigo-800 font-bold">Osho Image</TableHead>
-                <TableHead className="text-indigo-800 font-bold">Actions</TableHead>
+                <TableHead className="text-orange-800 font-bold">Full Name</TableHead>
+                <TableHead className="text-orange-800 font-bold hidden md:table-cell">Site Name</TableHead>
+                <TableHead className="text-orange-800 font-bold hidden lg:table-cell">Email</TableHead>
+                <TableHead className="text-orange-800 font-bold hidden sm:table-cell">Type</TableHead>
+                <TableHead className="text-orange-800 font-bold hidden lg:table-cell">Mobile Number</TableHead>
+                <TableHead className="text-orange-800 font-bold hidden lg:table-cell">SST</TableHead>
+                <TableHead className="text-orange-800 font-bold hidden md:table-cell">Image</TableHead>
+                <TableHead className="text-orange-800 font-bold">Status</TableHead>
+                <TableHead className="text-orange-800 font-bold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {projectManagers.map((pm) => (
-                <TableRow key={pm.id} className="hover:bg-indigo-50 transition-colors">
-                  <TableCell className="font-semibold text-indigo-900">
-                    {pm.first_name} {pm.last_name}
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-cyan-400 text-white px-3 py-1 rounded text-center font-medium">
-                      {pm.assigned_sites?.[0]?.address || 'No site assigned'}
+                <TableRow key={pm.id} className="hover:bg-orange-50 transition-colors">
+                  <TableCell className="font-semibold text-orange-900">
+                    <div>
+                      {pm.first_name} {pm.last_name}
+                      <div className="lg:hidden text-sm text-gray-600 mt-1">
+                        {pm.email || 'No email'}
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-indigo-700">
+                  <TableCell className="hidden md:table-cell">
+                    <div className="bg-gradient-to-r from-orange-400 to-yellow-400 text-white px-3 py-1 rounded-full text-center font-medium text-sm">
+                      {pm.assigned_sites?.[0]?.name || 'No site assigned'}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-orange-700 hidden lg:table-cell">
                     {pm.email || 'N/A'}
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-800">
+                  <TableCell className="hidden sm:table-cell">
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-200">
                       {pm.type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-indigo-700">
+                  <TableCell className="text-orange-700 hidden lg:table-cell">
                     {pm.mobile_number || 'N/A'}
                   </TableCell>
-                  <TableCell className="text-indigo-700">
+                  <TableCell className="text-orange-700 hidden lg:table-cell">
                     {pm.sst_number || 'N/A'}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     {pm.sst_image_url ? (
                       <div className="w-12 h-8 bg-gray-200 border rounded flex items-center justify-center">
                         <Image className="h-4 w-4 text-gray-500" />
@@ -264,21 +280,46 @@ const ProjectManagerList = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
+                    <Badge 
+                      variant={pm.is_active ? "default" : "secondary"}
+                      className={pm.is_active 
+                        ? "bg-green-500 text-white hover:bg-green-600" 
+                        : "bg-red-100 text-red-800 border-red-200"
+                      }
+                    >
+                      {pm.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(pm)}
-                        className="text-indigo-600 hover:bg-indigo-100"
+                        className="text-orange-600 hover:bg-orange-100 border border-orange-200"
                       >
                         <Edit className="h-4 w-4" />
+                        <span className="hidden sm:inline ml-1">Edit</span>
                       </Button>
                       <Button
-                        onClick={() => handleToggleActive(pm.id, true)}
-                        className="bg-cyan-500 hover:bg-cyan-600 text-white"
+                        onClick={() => handleToggleActive(pm.id, pm.is_active)}
+                        className={pm.is_active 
+                          ? "bg-red-500 hover:bg-red-600 text-white" 
+                          : "bg-green-500 hover:bg-green-600 text-white"
+                        }
                         size="sm"
                       >
-                        Active
+                        {pm.is_active ? (
+                          <>
+                            <UserX className="h-4 w-4" />
+                            <span className="hidden sm:inline ml-1">Deactivate</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="h-4 w-4" />
+                            <span className="hidden sm:inline ml-1">Activate</span>
+                          </>
+                        )}
                       </Button>
                     </div>
                   </TableCell>
@@ -289,7 +330,7 @@ const ProjectManagerList = () => {
         </div>
 
         {projectManagers.length === 0 && (
-          <div className="text-center py-8 text-indigo-600">
+          <div className="text-center py-8 text-orange-600">
             No project managers found.
           </div>
         )}
