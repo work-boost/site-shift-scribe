@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -32,11 +31,13 @@ interface EmployeeListProps {
   refreshTrigger: number;
 }
 
+type EmployeeTypeFilter = 'all' | 'Employee' | 'Foreman' | 'PM';
+
 const EmployeeList = ({ onEdit, onAdd, refreshTrigger }: EmployeeListProps) => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState<EmployeeTypeFilter>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
@@ -199,7 +200,7 @@ const EmployeeList = ({ onEdit, onAdd, refreshTrigger }: EmployeeListProps) => {
             />
           </div>
           <div className="flex gap-2">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={typeFilter} onValueChange={(value: EmployeeTypeFilter) => setTypeFilter(value)}>
               <SelectTrigger className="w-40 border-2 border-blue-200 focus:border-blue-500">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
