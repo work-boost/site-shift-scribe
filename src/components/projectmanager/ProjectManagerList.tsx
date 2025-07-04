@@ -21,6 +21,7 @@ interface ProjectManager {
   mobile_number: string;
   type: string;
   sst_number: string;
+  sst_expire_date: string;
   sst_image_url: string;
   assigned_sites: Array<{
     id: string;
