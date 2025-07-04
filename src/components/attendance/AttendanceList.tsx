@@ -159,93 +159,108 @@ const AttendanceList = ({ onEdit, onAdd, refreshTrigger }: AttendanceListProps) 
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="p-8">
-          <div className="text-center">Loading attendance records...</div>
+      <Card className="border-2 border-orange-200 shadow-2xl">
+        <CardContent className="p-12">
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent mr-4"></div>
+            <span className="text-xl text-orange-600 font-medium">Loading attendance records...</span>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-2 border-orange-200 shadow-2xl bg-white">
+      <CardHeader className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-t-lg">
         <div className="flex justify-between items-center">
-          <CardTitle>Attendance Records</CardTitle>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={exportToExcel}>
+          <CardTitle className="text-2xl font-bold">Attendance Records</CardTitle>
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={exportToExcel}
+              className="border-2 border-white text-white hover:bg-white hover:text-orange-600 font-medium"
+            >
               <Download className="h-4 w-4 mr-2" />
               Export Excel
             </Button>
-            <Button variant="outline" onClick={exportToCSV}>
+            <Button 
+              variant="outline" 
+              onClick={exportToCSV}
+              className="border-2 border-white text-white hover:bg-white hover:text-orange-600 font-medium"
+            >
               <Download className="h-4 w-4 mr-2" />
               Export CSV
             </Button>
-            <Button onClick={onAdd}>
+            <Button 
+              onClick={onAdd}
+              className="bg-white text-orange-600 hover:bg-orange-50 font-medium shadow-lg"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Record Attendance
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <div className="flex gap-4 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-orange-400" />
             <Input
               placeholder="Search by employee or job site..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
+              className="pl-10 border-2 border-orange-200 focus:border-orange-500 text-lg p-3"
             />
           </div>
           <div className="relative">
-            <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-orange-400" />
             <Input
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="pl-8 w-40"
+              className="pl-10 w-48 border-2 border-orange-200 focus:border-orange-500 text-lg p-3"
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border-2 border-orange-100 shadow-lg">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Job Site</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Start Time</TableHead>
-                <TableHead>End Time</TableHead>
-                <TableHead>Hours</TableHead>
-                <TableHead>Deduct (min)</TableHead>
-                <TableHead>Actions</TableHead>
+              <TableRow className="bg-orange-50 border-b-2 border-orange-200">
+                <TableHead className="font-bold text-orange-800 text-lg">Employee</TableHead>
+                <TableHead className="font-bold text-orange-800 text-lg">Job Site</TableHead>
+                <TableHead className="font-bold text-orange-800 text-lg">Date</TableHead>
+                <TableHead className="font-bold text-orange-800 text-lg">Start Time</TableHead>
+                <TableHead className="font-bold text-orange-800 text-lg">End Time</TableHead>
+                <TableHead className="font-bold text-orange-800 text-lg">Hours</TableHead>
+                <TableHead className="font-bold text-orange-800 text-lg">Deduct (min)</TableHead>
+                <TableHead className="font-bold text-orange-800 text-lg">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {attendance.map((record) => (
-                <TableRow key={record.id}>
-                  <TableCell>
+              {attendance.map((record, index) => (
+                <TableRow key={record.id} className={`hover:bg-orange-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                  <TableCell className="font-semibold text-gray-800 text-lg">
                     {record.employee.first_name} {record.employee.last_name}
                   </TableCell>
-                  <TableCell>{record.job_site.name}</TableCell>
-                  <TableCell>{format(new Date(record.date), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell>{record.start_time}</TableCell>
-                  <TableCell>{record.end_time}</TableCell>
+                  <TableCell className="text-gray-600">{record.job_site.name}</TableCell>
+                  <TableCell className="text-gray-600">{format(new Date(record.date), 'MMM dd, yyyy')}</TableCell>
+                  <TableCell className="text-gray-600">{record.start_time}</TableCell>
+                  <TableCell className="text-gray-600">{record.end_time}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-800 border border-orange-300 font-medium text-sm px-3 py-1">
                       {record.shift_hours} hrs
                     </Badge>
                   </TableCell>
-                  <TableCell>{record.minute_deduct}</TableCell>
+                  <TableCell className="text-gray-600">{record.minute_deduct}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onEdit(record)}
+                        className="border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -253,6 +268,7 @@ const AttendanceList = ({ onEdit, onAdd, refreshTrigger }: AttendanceListProps) 
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(record.id)}
+                        className="border-2 border-red-200 text-red-600 hover:bg-red-500 hover:text-white"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -265,22 +281,23 @@ const AttendanceList = ({ onEdit, onAdd, refreshTrigger }: AttendanceListProps) 
         </div>
 
         {attendance.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No attendance records found.
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-500">No attendance records found</p>
           </div>
         )}
 
         {totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-6">
+          <div className="flex justify-center gap-3 mt-8">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
+              className="border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white font-medium"
             >
               Previous
             </Button>
-            <span className="px-4 py-2 text-sm">
+            <span className="px-6 py-2 bg-orange-100 text-orange-800 rounded-lg font-medium">
               Page {currentPage} of {totalPages}
             </span>
             <Button
@@ -288,6 +305,7 @@ const AttendanceList = ({ onEdit, onAdd, refreshTrigger }: AttendanceListProps) 
               size="sm"
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
+              className="border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white font-medium"
             >
               Next
             </Button>

@@ -125,50 +125,59 @@ const JobSiteList = ({ onEdit, onAdd, refreshTrigger }: JobSiteListProps) => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Job Sites');
     XLSX.writeFile(wb, `job-sites-${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    toast({ title: 'Excel file downloaded successfully' });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      case 'Planning': return 'bg-blue-100 text-blue-800';
-      case 'On Hold': return 'bg-yellow-100 text-yellow-800';
-      case 'Completed': return 'bg-gray-100 text-gray-800';
-      case 'Cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Active': return 'bg-green-100 text-green-800 border-green-300';
+      case 'Planning': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'On Hold': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'Completed': return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Cancelled': return 'bg-red-100 text-red-800 border-red-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-2 border-green-200 shadow-2xl bg-white">
+      <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
         <div className="flex justify-between items-center">
-          <CardTitle>Job Sites</CardTitle>
-          <div className="flex gap-2">
-            <Button onClick={exportToExcel} variant="outline">
+          <CardTitle className="text-2xl font-bold">Job Sites Management</CardTitle>
+          <div className="flex gap-3">
+            <Button 
+              onClick={exportToExcel} 
+              variant="outline" 
+              className="border-2 border-white text-white hover:bg-white hover:text-green-600 font-medium"
+            >
               <Download className="h-4 w-4 mr-2" />
               Export Excel
             </Button>
-            <Button onClick={onAdd}>
+            <Button 
+              onClick={onAdd}
+              className="bg-white text-green-600 hover:bg-green-50 font-medium shadow-lg"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Job Site
             </Button>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-4 mt-4">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-300" />
             <Input
               placeholder="Search job sites..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
+              className="pl-10 border-2 border-green-300 bg-white/90 text-gray-800 placeholder-gray-500 focus:border-white"
             />
           </div>
           <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'all' | JobSiteStatus)}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-48 border-2 border-green-300 bg-white/90 text-gray-800 focus:border-white">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white border-2 border-green-200 shadow-lg">
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="Planning">Planning</SelectItem>
               <SelectItem value="Active">Active</SelectItem>
@@ -179,77 +188,89 @@ const JobSiteList = ({ onEdit, onAdd, refreshTrigger }: JobSiteListProps) => {
           </Select>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
           </div>
         ) : (
           <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Project Manager</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>End Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {jobSites.map((site) => (
-                  <TableRow key={site.id}>
-                    <TableCell className="font-medium">{site.name}</TableCell>
-                    <TableCell>{site.address || '-'}</TableCell>
-                    <TableCell>{site.pm_name}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(site.status)}>
-                        {site.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{site.start_date || '-'}</TableCell>
-                    <TableCell>{site.end_date || '-'}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onEdit(site)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => deleteJobSite(site.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto rounded-lg border-2 border-green-100 shadow-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-green-50 border-b-2 border-green-200">
+                    <TableHead className="font-bold text-green-800 text-lg">Name</TableHead>
+                    <TableHead className="font-bold text-green-800 text-lg">Address</TableHead>
+                    <TableHead className="font-bold text-green-800 text-lg">Project Manager</TableHead>
+                    <TableHead className="font-bold text-green-800 text-lg">Status</TableHead>
+                    <TableHead className="font-bold text-green-800 text-lg">Start Date</TableHead>
+                    <TableHead className="font-bold text-green-800 text-lg">End Date</TableHead>
+                    <TableHead className="font-bold text-green-800 text-lg">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {jobSites.map((site, index) => (
+                    <TableRow key={site.id} className={`hover:bg-green-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                      <TableCell className="font-semibold text-gray-800 text-lg">{site.name}</TableCell>
+                      <TableCell className="text-gray-600">{site.address || '-'}</TableCell>
+                      <TableCell className="text-gray-600">{site.pm_name}</TableCell>
+                      <TableCell>
+                        <Badge className={`${getStatusColor(site.status)} border font-medium text-sm px-3 py-1`}>
+                          {site.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-600">{site.start_date || '-'}</TableCell>
+                      <TableCell className="text-gray-600">{site.end_date || '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onEdit(site)}
+                            className="border-2 border-green-200 text-green-600 hover:bg-green-500 hover:text-white"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => deleteJobSite(site.id)}
+                            className="border-2 border-red-200 text-red-600 hover:bg-red-500 hover:text-white"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {jobSites.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-xl text-gray-500">No job sites found matching your criteria</p>
+              </div>
+            )}
 
             {totalPages > 1 && (
-              <div className="flex justify-center mt-4 space-x-2">
+              <div className="flex justify-center mt-8 space-x-3">
                 <Button
                   variant="outline"
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
+                  className="border-2 border-green-200 text-green-600 hover:bg-green-500 hover:text-white font-medium"
                 >
                   Previous
                 </Button>
-                <span className="flex items-center px-4">
+                <span className="flex items-center px-6 py-2 bg-green-100 text-green-800 rounded-lg font-medium">
                   Page {currentPage} of {totalPages}
                 </span>
                 <Button
                   variant="outline"
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
+                  className="border-2 border-green-200 text-green-600 hover:bg-green-500 hover:text-white font-medium"
                 >
                   Next
                 </Button>
