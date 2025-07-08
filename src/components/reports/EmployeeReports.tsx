@@ -110,8 +110,9 @@ const EmployeeReports = () => {
 
       attendance?.forEach(record => {
         const hours = record.shift_hours || 0;
-        const regularHours = Math.min(hours, 8);
-        const overtimeHours = Math.max(0, hours - 8);
+        // Store daily hours - overtime calculated weekly (40+ hours = overtime)
+        const regularHours = hours;
+        const overtimeHours = 0;
         totalPay += (regularHours * regularRate) + (overtimeHours * overtimeRate);
       });
 

@@ -84,14 +84,9 @@ const PayrollReport = () => {
       let regularPay = 0;
       let overtimePay = 0;
 
-      // Calculate regular and overtime hours (4+ hours = overtime)
-      if (shiftHours <= 4) {
-        regularHours = shiftHours;
-        overtimeHours = 0;
-      } else {
-        regularHours = 4;
-        overtimeHours = shiftHours - 4;
-      }
+      // Store daily hours - overtime calculated weekly (40+ hours = overtime)
+      regularHours = shiftHours;
+      overtimeHours = 0;
 
       // Calculate pay
       const regularRate = employee?.regular_rate || 0;
@@ -252,7 +247,7 @@ const PayrollReport = () => {
           Payroll Report
         </CardTitle>
         <p className="text-orange-100">
-          Overtime calculation: Hours worked beyond 4 hours are considered overtime
+          Overtime calculation: Hours worked beyond 40 hours per week are considered overtime
         </p>
       </CardHeader>
       <CardContent className="p-6">

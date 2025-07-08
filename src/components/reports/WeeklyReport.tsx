@@ -113,23 +113,33 @@ const WeeklyReport = () => {
         acc[employeeId].total_hours += shiftHours;
         acc[employeeId].days.add(record.date);
 
-        // Calculate pay
+        // Calculate pay (store daily hours, calculate overtime weekly)
         const regularRate = employee.regular_rate || 0;
         const overtimeRate = employee.overtime_rate || 0;
         
-        let regularHours = Math.min(shiftHours, 4);
-        let overtimeHours = Math.max(0, shiftHours - 4);
-        
-        acc[employeeId].total_pay += (regularHours * regularRate) + (overtimeHours * overtimeRate);
+        // Store daily hours without overtime calculation yet
+        acc[employeeId].total_pay += shiftHours * regularRate;
 
         return acc;
       }, {});
 
-      // Convert to array and add total days
-      const weeklyArray = Object.values(weeklyTotals).map((employee: any) => ({
-        ...employee,
-        total_days: employee.days.size,
-      }));
+      // Convert to array and calculate weekly overtime
+      const weeklyArray = Object.values(weeklyTotals).map((employee: any) => {
+        const totalHours = employee.total_hours;
+        const regularHours = Math.min(totalHours, 40);
+        const overtimeHours = Math.max(0, totalHours - 40);
+        
+        // Recalculate pay with proper overtime
+        const regularRate = employee.regular_rate || 0;
+        const overtimeRate = employee.overtime_rate || 0;
+        const correctedPay = (regularHours * regularRate) + (overtimeHours * overtimeRate);
+        
+        return {
+          ...employee,
+          total_days: employee.days.size,
+          total_pay: correctedPay,
+        };
+      });
 
       setWeeklyData(weeklyArray);
       toast.success('Weekly report generated successfully');

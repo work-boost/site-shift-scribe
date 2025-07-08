@@ -117,8 +117,9 @@ const MasterReport = () => {
         const regularRate = employee.regular_rate || 0;
         const overtimeRate = employee.overtime_rate || 0;
         
-        let regularHours = Math.min(shiftHours, 4);
-        let overtimeHours = Math.max(0, shiftHours - 4);
+        // Store daily hours - overtime calculated weekly (40+ hours = overtime)
+        let regularHours = shiftHours;
+        let overtimeHours = 0;
         
         const regularPayAmount = regularHours * regularRate;
         const overtimePayAmount = overtimeHours * overtimeRate;
