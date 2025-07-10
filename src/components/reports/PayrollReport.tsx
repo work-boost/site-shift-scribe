@@ -361,6 +361,8 @@ const PayrollReport = () => {
                     <TableHead className="text-orange-800">Total Hours</TableHead>
                     <TableHead className="text-orange-800">Regular Hours</TableHead>
                     <TableHead className="text-orange-800">Overtime Hours</TableHead>
+                    <TableHead className="text-orange-800">Regular Rate</TableHead>
+                    <TableHead className="text-orange-800">Overtime Rate</TableHead>
                     <TableHead className="text-orange-800">Regular Pay</TableHead>
                     <TableHead className="text-orange-800">Overtime Pay</TableHead>
                     <TableHead className="text-orange-800">Total Pay</TableHead>
@@ -379,6 +381,8 @@ const PayrollReport = () => {
                       <TableCell>{record.shift_hours?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell>{record.regular_hours?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell>{record.overtime_hours?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell className="text-orange-600">${record.regular_rate?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell className="text-orange-600">${record.overtime_rate?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell className="text-green-700">${record.regular_pay?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell className="text-blue-700">${record.overtime_pay?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell className="font-semibold text-orange-700">

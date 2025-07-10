@@ -177,22 +177,22 @@ const DashboardCards = () => {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
       {cards.map((card, index) => {
         const Icon = card.icon;
         return (
           <Card key={index} className={`border-2 ${card.borderColor} shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105`}>
             <CardHeader className={`${card.bgColor} flex flex-row items-center justify-between space-y-0 pb-2 rounded-t-lg`}>
-              <CardTitle className={`text-sm font-medium ${card.textColor}`}>{card.title}</CardTitle>
-              <div className={`${card.color} p-2 rounded-lg shadow-md`}>
+              <CardTitle className={`text-sm font-medium ${card.textColor} truncate`}>{card.title}</CardTitle>
+              <div className={`${card.color} p-2 rounded-lg shadow-md flex-shrink-0`}>
                 <Icon className="h-4 w-4 text-white" />
               </div>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className={`text-2xl font-bold ${card.textColor}`}>{card.value}</div>
+              <div className={`text-xl sm:text-2xl font-bold ${card.textColor} truncate`}>{card.value}</div>
               <div className="flex items-center mt-2">
-                <TrendingUp className={`h-3 w-3 ${card.textColor} mr-1`} />
-                <span className="text-xs text-gray-500">This month</span>
+                <TrendingUp className={`h-3 w-3 ${card.textColor} mr-1 flex-shrink-0`} />
+                <span className="text-xs text-gray-500 truncate">This month</span>
               </div>
             </CardContent>
           </Card>
