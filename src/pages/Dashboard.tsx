@@ -1,5 +1,7 @@
 
 import DashboardCards from '@/components/dashboard/DashboardCards';
+import RecentAttendance from '@/components/dashboard/RecentAttendance';
+import TopPayroll from '@/components/dashboard/TopPayroll';
 import { Construction } from 'lucide-react';
 
 const Dashboard = () => {
@@ -18,6 +20,11 @@ const Dashboard = () => {
       </div>
       
       <DashboardCards />
+      
+      <div className="grid gap-6 md:grid-cols-2">
+        <RecentAttendance />
+        <TopPayroll />
+      </div>
     </div>
   );
 };
